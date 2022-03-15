@@ -1,46 +1,57 @@
-import { Component } from 'react';
+import { Component, useEffect, useState } from 'react';
 
 import Header from '../../components/Header';
-import api from '../../services/api';
-import Food from '../../components/Food';
+import { api } from '../../services/api';
+import {Food} from '../../components/Food';
 import ModalAddFood from '../../components/ModalAddFood';
 import ModalEditFood from '../../components/ModalEditFood';
 import { FoodsContainer } from './styles';
+import { number } from 'yup';
 
-class Dashboard extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      foods: [],
-      editingFood: {},
-      modalOpen: false,
-      editModalOpen: false,
+
+interface IFood {
+  id: number,
+  name: string,
+  description: string,
+  price: number,
+  available: boolean,
+  image: string,
+}
+
+
+
+
+export function Dashboard() {
+  const [foods, setFoods] = useState<IFood[]>([])
+  const [editingFood, setEditingFood] = useState()
+  const [modalOpen, setModalOpen] = useState()
+  const [editModalOpen, setEditModalOpen] = useState()
+
+
+  useEffect(() => {
+    async function getFood() {
+      const response = await api.get('/foods')
+      setFoods(response.data)
     }
-  }
+    getFood()
+  }, [])
 
-  async componentDidMount() {
-    const response = await api.get('/foods');
 
-    this.setState({ foods: response.data });
-  }
-
-  handleAddFood = async food => {
-    const { foods } = this.state;
-
+  export async function handleAddFood(food: IFood) {
     try {
       const response = await api.post('/foods', {
         ...food,
         available: true,
       });
 
-      this.setState({ foods: [...foods, response.data] });
+      setFoods([...foods, response.data]);
     } catch (err) {
       console.log(err);
     }
   }
 
-  handleUpdateFood = async food => {
-    const { foods, editingFood } = this.state;
+  export async function handleUpdateFood(food: IFood) {
+    // const { foods, editingFood } = this.state;
 
     try {
       const foodUpdated = await api.put(
@@ -51,8 +62,8 @@ class Dashboard extends Component {
       const foodsUpdated = foods.map(f =>
         f.id !== foodUpdated.data.id ? f : foodUpdated.data,
       );
+      setFoods(foodsUpdated);
 
-      this.setState({ foods: foodsUpdated });
     } catch (err) {
       console.log(err);
     }
