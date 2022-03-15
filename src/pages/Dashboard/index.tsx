@@ -1,13 +1,11 @@
 import { Component, useEffect, useState } from 'react';
 
-import Header from '../../components/Header';
+import { Header } from '../../components/Header';
 import { api } from '../../services/api';
-import {Food} from '../../components/Food';
-import ModalAddFood from '../../components/ModalAddFood';
-import ModalEditFood from '../../components/ModalEditFood';
+import { Food } from '../../components/Food';
+import { ModalAddFood } from '../../components/ModalAddFood';
+import { ModalEditFood } from '../../components/ModalEditFood';
 import { FoodsContainer } from './styles';
-import { number } from 'yup';
-
 
 interface IFood {
   id: number,
@@ -18,10 +16,11 @@ interface IFood {
   image: string,
 }
 
+interface DashboardProps{
 
+}
 
-
-export function Dashboard() {
+export function Dashboard({modalOpen, editModalOpen, editingFood, foods}: DashboardProps) {
   const [foods, setFoods] = useState<IFood[]>([])
   const [editingFood, setEditingFood] = useState()
   const [modalOpen, setModalOpen] = useState()
@@ -37,7 +36,7 @@ export function Dashboard() {
   }, [])
 
 
-  export async function handleAddFood(food: IFood) {
+  async function handleAddFood(food: Omit<IFood, "id" | "available">) {
     try {
       const response = await api.post('/foods', {
         ...food,
