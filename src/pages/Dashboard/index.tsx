@@ -1,4 +1,4 @@
-import { Component, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Header } from '../../components/Header';
 import { api } from '../../services/api';
@@ -16,15 +16,18 @@ interface IFood {
   image: string,
 }
 
-interface DashboardProps{
-
+interface AddFood {
+  image: string;
+  name: string;
+  price: string;
+  description: string;
 }
 
-export function Dashboard({modalOpen, editModalOpen, editingFood, foods}: DashboardProps) {
+export function Dashboard() {
   const [foods, setFoods] = useState<IFood[]>([])
-  const [editingFood, setEditingFood] = useState()
-  const [modalOpen, setModalOpen] = useState()
-  const [editModalOpen, setEditModalOpen] = useState()
+  const [editingFood, setEditingFood] = useState<IFood>({} as IFood)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
 
 
   useEffect(() => {
@@ -36,7 +39,7 @@ export function Dashboard({modalOpen, editModalOpen, editingFood, foods}: Dashbo
   }, [])
 
 
-  async function handleAddFood(food: Omit<IFood, "id" | "available">) {
+  async function handleAddFood(food: AddFood): Promise<void> {
     try {
       const response = await api.post('/foods', {
         ...food,
@@ -49,9 +52,7 @@ export function Dashboard({modalOpen, editModalOpen, editingFood, foods}: Dashbo
     }
   }
 
-  export async function handleUpdateFood(food: IFood) {
-    // const { foods, editingFood } = this.state;
-
+  async function handleUpdateFood(food: AddFood): Promise<void> {
     try {
       const foodUpdated = await api.put(
         `/foods/${editingFood.id}`,
@@ -68,64 +69,59 @@ export function Dashboard({modalOpen, editModalOpen, editingFood, foods}: Dashbo
     }
   }
 
-  handleDeleteFood = async id => {
-    const { foods } = this.state;
+  const handleDeleteFood = async (id: number) => {
 
     await api.delete(`/foods/${id}`);
 
     const foodsFiltered = foods.filter(food => food.id !== id);
 
-    this.setState({ foods: foodsFiltered });
+    setFoods(foodsFiltered);
   }
 
-  toggleModal = () => {
-    const { modalOpen } = this.state;
 
-    this.setState({ modalOpen: !modalOpen });
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
   }
 
-  toggleEditModal = () => {
-    const { editModalOpen } = this.state;
+  const toggleEditModal = () => {
 
-    this.setState({ editModalOpen: !editModalOpen });
+    setEditModalOpen(!editModalOpen);
   }
 
-  handleEditFood = food => {
-    this.setState({ editingFood: food, editModalOpen: true });
+  const handleEditFood = (food: IFood) => {
+    setEditModalOpen(true)
+    setEditingFood(food);
   }
 
-  render() {
-    const { modalOpen, editModalOpen, editingFood, foods } = this.state;
 
-    return (
-      <>
-        <Header openModal={this.toggleModal} />
-        <ModalAddFood
-          isOpen={modalOpen}
-          setIsOpen={this.toggleModal}
-          handleAddFood={this.handleAddFood}
-        />
-        <ModalEditFood
-          isOpen={editModalOpen}
-          setIsOpen={this.toggleEditModal}
-          editingFood={editingFood}
-          handleUpdateFood={this.handleUpdateFood}
-        />
+  return (
+    <>
+      <Header openModal={toggleModal} />
+      <ModalAddFood
+        isOpen={modalOpen}
+        setIsOpen={toggleModal}
+        handleAddFood={handleAddFood}
+      />
+      <ModalEditFood
+        isOpen={editModalOpen}
+        setIsOpen={toggleEditModal}
+        editingFood={editingFood}
+        handleUpdateFood={handleUpdateFood}
+      />
 
-        <FoodsContainer data-testid="foods-list">
-          {foods &&
-            foods.map(food => (
-              <Food
-                key={food.id}
-                food={food}
-                handleDelete={this.handleDeleteFood}
-                handleEditFood={this.handleEditFood}
-              />
-            ))}
-        </FoodsContainer>
-      </>
-    );
-  }
-};
+      <FoodsContainer data-testid="foods-list">
+        {foods &&
+          foods.map(food => (
+            <Food
+              key={food.id}
+              food={food}
+              handleDelete={handleDeleteFood}
+              handleEditFood={handleEditFood}
+            />
+          ))}
+      </FoodsContainer>
+    </>
+  );
+}
 
-export default Dashboard;
+

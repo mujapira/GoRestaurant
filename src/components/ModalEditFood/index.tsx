@@ -1,4 +1,4 @@
-import { Component, createRef, useRef } from 'react';
+import { useRef } from 'react';
 import { FiCheckSquare } from 'react-icons/fi';
 import { Form } from './styles';
 import { Modal } from '../Modal';
@@ -16,7 +16,7 @@ interface IFood {
 
 interface ModalEditFoodProps {
   isOpen: boolean;
-  setIsOpen: () => null;
+  setIsOpen: () => void;
   handleUpdateFood: (data: AddFood) => void;
   editingFood: IFood;
 }
